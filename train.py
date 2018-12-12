@@ -105,6 +105,10 @@ def train(data_root, in_c=3, out_c=3, bs=1, num_epoch=200, lambda_idt=0.5, lambd
         # Update Learning Rate according to scheduler
         gan.lr_update()
         print(running_g_loss, running_dA_loss, running_dB_loss)
+        torch.save(gan.G_A2B.state_dict(), 'output/G_A2B.pt')
+        torch.save(gan.G_B2A.state_dict(), 'output/G_B2A.pt')
+        torch.save(gan.D_A.state_dict(), 'output/D_A.pt')
+        torch.save(gan.D_B.state_dict(), 'output/D_B.pt')
 
 train(sys.argv[1])    
 
