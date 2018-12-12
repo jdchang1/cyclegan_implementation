@@ -41,6 +41,9 @@ def train(data_root, in_c=3, out_c=3, bs=1, num_epoch=200, lambda_idt=0.5, lambd
     dataloader = DataLoader(dataset, batch_size=bs, shuffle=True, num_workers=6)
     print("Training Starting")
     # The training loop
+    generator_loss = []
+    d_a_loss = []
+    d_b_loss = []
     for epoch in range(1, num_epoch+1):
         running_g_loss = 0.0
         running_dA_loss = 0.0
@@ -99,16 +102,24 @@ def train(data_root, in_c=3, out_c=3, bs=1, num_epoch=200, lambda_idt=0.5, lambd
             loss_D_B.backward()
             gan.optim_d.step()
 
-            running_g_loss += g_loss
-            running_dA_loss += loss_D_A
-            running_dB_loss += loss_D_B
+            running_g_loss += g_loss.data
+            running_dA_loss += loss_D_A.data
+            running_dB_loss += loss_D_B.data
+        print(running_g_loss/len(dataset))
+        print(running_dA_loss/len(dataset))
+        print(running_dB_loss/len(dataset))
         # Update Learning Rate according to scheduler
         gan.lr_update()
-        print(running_g_loss, running_dA_loss, running_dB_loss)
+        generator_loss.append(running_g_loss/len(dataset))
+        d_a_loss.append(running_dA_loss/len(dataset))
+        d_b_loss.append(running_dB_loss/len(dataset))
         torch.save(gan.G_A2B.state_dict(), 'output/G_A2B.pt')
         torch.save(gan.G_B2A.state_dict(), 'output/G_B2A.pt')
         torch.save(gan.D_A.state_dict(), 'output/D_A.pt')
         torch.save(gan.D_B.state_dict(), 'output/D_B.pt')
+    print(generator_loss)
+    print(d_a_loss)
+    print(d_b_loss)
 
 train(sys.argv[1])    
 
