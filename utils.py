@@ -25,7 +25,10 @@ class LearningRateDecay():
         Args:
             epoch (int): current epoch
         """
-        linear_decay = max(0,epoch+self.offset-self.decay_start)/(self.num_epochs-self.decay_start)
+        if decay_start != num_epochs:
+            linear_decay = max(0,epoch+self.offset-self.decay_start)/(self.num_epochs-self.decay_start)
+        else:
+            linear_decay = 0
         return 1.0 - linear_decay
 
 class DiscriminatorBuffer():

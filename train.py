@@ -9,14 +9,14 @@ from PIL import Image
 from cyclegan import CycleGan
 from utils import DiscriminatorBuffer, ImageDataset
 
-def train(data_root, in_c=3, out_c=3, bs=1, num_epoch=200, lambda_idt=0.5, lambda_A=10.0, lambda_B=10.0, lambda_D=0.5):
+def train(data_root, in_c=3, out_c=3, bs=1, num_epoch=200, decay_start=100, lambda_idt=0.5, lambda_A=10.0, lambda_B=10.0, lambda_D=0.5):
     """
     in_c and out_c are 3 for the 3 color channels. These are left as
     variables to account for the potential to use grayscale pictures
     """
     dev_ = torch.device('cuda:0')
 
-    gan = CycleGan(in_c, out_c)
+    gan = CycleGan(in_c, out_c, num_epoch=num_epoch, decay_start=decay_start)
     
     # Buffers with a size of 50 so that discriminator doesn't forget history
     A_buffer = DiscriminatorBuffer()
@@ -110,9 +110,9 @@ def train(data_root, in_c=3, out_c=3, bs=1, num_epoch=200, lambda_idt=0.5, lambd
         print(running_dB_loss/len(dataset))
         # Update Learning Rate according to scheduler
         gan.lr_update()
-        generator_loss.append(running_g_loss/len(dataset))
-        d_a_loss.append(running_dA_loss/len(dataset))
-        d_b_loss.append(running_dB_loss/len(dataset))
+        generator_loss.append((running_g_loss/len(dataset)).cpu().item())
+        d_a_loss.append((running_dA_loss/len(dataset)).cpu().item())
+        d_b_loss.append((running_dB_loss/len(dataset)).cpu().item())
         torch.save(gan.G_A2B.state_dict(), 'output/G_A2B.pt')
         torch.save(gan.G_B2A.state_dict(), 'output/G_B2A.pt')
         torch.save(gan.D_A.state_dict(), 'output/D_A.pt')
